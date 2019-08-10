@@ -45,7 +45,8 @@ class SearchAutocorrect {
     this.resetAutocorrectLists.call(this);
     const inputValue = this.searchWindow.value;
     if (inputValue === "") return this.closeAutoCorrectWindow();
-    fetch(this.formUrl + inputValue).then(res => {
+    var myInit = { method: "POST", mode: "cors" };
+    fetch(this.formUrl + inputValue, myInit).then(res => {
       res.json().then(jsonData => {
         this.addList(jsonData);
         this.cloakBody();
