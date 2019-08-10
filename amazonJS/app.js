@@ -1,15 +1,21 @@
-import { ScrollEvent_sticky } from "./scrollEvent-Sticky.js";
-import { Carousel_middle } from "./carousel-middle.js";
-import { Search_autocorrect } from "./search-autocorrect.js";
+import { ScrollEventSticky } from "./scrollEvent-Sticky.js";
+import { CarouselMiddle } from "./carousel-middle.js";
+import { SearchAutocorrect } from "./search-autocorrect.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-  const scrollEvent_sticky = new ScrollEvent_sticky({
+  const scrollEventSticky = new ScrollEventSticky({
     header: "header",
     stickyLayer: ".top-layer-container",
-    hiddenLayer: ".prime-member-container"
+    hiddenLayer: ".prime-member-container",
+    closeBtn: ".close-button",
+    closeArrowBtn: ".close-button-foot",
+    openArrowBtn: ".top-layer-trigger-button",
+    topLayerActiveClass: "top-layer-active",
+    scrollActiveClass: "prime-member-container-scroll-active",
+    btnActiveClass: "prime-member-container-active"
   });
 
-  const carousel_middle = new Carousel_middle({
+  const carouselMiddle = new CarouselMiddle({
     container: ".middle-body-carousel-list",
     rightBtn: ".middle-body-carousel-right-button",
     leftBtn: ".middle-body-carousel-left-button",
@@ -24,15 +30,17 @@ document.addEventListener("DOMContentLoaded", () => {
     transitionPart: "all",   
   });
 
-  const search_autocorrect = new Search_autocorrect({
+  const searchAutocorrect = new SearchAutocorrect({
     searchWindow: '.head-search-blank',
     autocorrectWindow: '.head-search-autocorrect-container',
-    autocorrectLists: 'head-search-autocorrect-list',//not class
+    autocorrectListsClass: 'head-search-autocorrect-list',//not class
     toBeCloakedElement: '.wholeBodyContainer',
     searchButtonElement: '.head-search-button'
   }, {
     formId: '#input-form'
   }, {
     cloakingTransitionTime: '0.3s',
+    shadingAutocorrectClass: 'shade',
+    cloakingBackgroundClass: 'cloaking'
   })
 });

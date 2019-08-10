@@ -1,6 +1,6 @@
 import { qs } from "./util.js";
 
-class Carousel_middle {
+class CarouselMiddle {
   constructor(elObj, urlObj, optionObj) {
     Object.assign(this, { elObj, urlObj, optionObj });
     this.bPlay = false;
@@ -10,13 +10,17 @@ class Carousel_middle {
 
   init() {
     let ajaxDataUrl = this.urlObj.ajaxDataUrl;
-    fetch(ajaxDataUrl).then(res => {
-      res.json().then(jsonData => {
-        this.handler(jsonData)
-      })
-    })
+    this.getData(ajaxDataUrl);
     this.checkAuto();
     setTimeout(this.moveAuto.bind(this), this.optionObj.carouselAutoMovingMS);
+  }
+
+  getData(dataUrl) {
+    fetch(dataUrl).then(res => {
+      return res.json()
+    }).then(jsonData => {
+      this.handler(jsonData)
+    })
   }
 
   handler(parsedObj) {
@@ -26,17 +30,17 @@ class Carousel_middle {
     this.anchorEl = qs(this.elObj.anchorEl);
     this.imgUrlArr = parsedObj.backgroundUrl;
     this.linkUrlArr = parsedObj.linkArr;
-    this.right.addEventListener("click", this.moveRight.bind(this));
-    this.left.addEventListener("click", this.moveLeft.bind(this));
+    this.right.addEventListener("click", (e) => {this.moveRight()});
+    this.left.addEventListener("click", (e) => {this.moveLeft()});
   }
 
   moveAuto() {
     if (this.bMouseOver) {
-      setTimeout(this.moveAuto.bind(this), this.optionObj.carouselAutoMovingMS);
+      setTimeout(() => this.moveAuto(), this.optionObj.carouselAutoMovingMS);
       return;
     }
     this.moveRight();
-    setTimeout(this.moveAuto.bind(this), this.optionObj.carouselAutoMovingMS);
+    setTimeout(() => this.moveAuto(), this.optionObj.carouselAutoMovingMS);
   }
 
   moveRight() {
@@ -88,8 +92,8 @@ class Carousel_middle {
 
   checkAuto() {
     this.autoEventStopContainer = qs(this.optionObj.autoEventStopContainer);
-    this.autoEventStopContainer.addEventListener("mouseover", this.mouseOver.bind(this));
-    this.autoEventStopContainer.addEventListener("mouseout", this.mouseOut.bind(this));
+    this.autoEventStopContainer.addEventListener("mouseover", () => this.mouseOver());
+    this.autoEventStopContainer.addEventListener("mouseout", () => this.mouseOut());
   }
 
   mouseOver() {
@@ -101,4 +105,4 @@ class Carousel_middle {
   }
 }
 
-export { Carousel_middle };
+export { CarouselMiddle };

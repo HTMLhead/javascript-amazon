@@ -1,6 +1,6 @@
 import { qs } from "./util.js";
 
-class Search_autocorrect {
+class SearchAutocorrect {
   constructor(elObj, formObj, optionObj) {
     Object.assign(this, { elObj, formObj, optionObj });
     this.autocorrectListIndex = -1;
@@ -18,15 +18,21 @@ class Search_autocorrect {
       this.optionObj.cloakingTransitionTime
     }`;
 
-    this.searchWindow.addEventListener('keydown', this.clearBounce.bind(this))
-    this.searchWindow.addEventListener("keyup", this.debounce.bind(this));
-    this.autocorrectWindow.addEventListener("click", this.goAddress.bind(this));
-    this.searchBtn.addEventListener("click", this.submitFormData.bind(this));
+    this.formSubmitPrevent(this.formObj);
+    this.searchWindow.addEventListener('keydown', (e) => this.clearBounce(e));
+    this.searchWindow.addEventListener("keyup", (e) => this.debouncing(e));
+    this.autocorrectWindow.addEventListener("click", (e) => this.goAddress(e.target));
+    this.searchBtn.addEventListener("click", (e) => this.submitFormData(e));
   }
 
-  debounce(e) {
+  formSubmitPrevent(form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+    })
+  }  
+  debouncing(e) {
     if (this.isUpDownArrowOrEnter(e.key)) return this.getSearchData(e);
-    this.debounce = setTimeout(this.getSearchData.bind(this, e), 1000);
+    this.debounce = setTimeout(() => this.getSearchData(e), 1000);
   }
   clearBounce() {
     clearTimeout(this.debounce);
@@ -40,7 +46,7 @@ class Search_autocorrect {
     if (this.isUpDownArrowOrEnter(e.key)) return this.operateCertainKeyEvent(e);
     this.resetAutocorrectLists.call(this);
     const inputValue = this.searchWindow.value;
-    if (this.isInputBlank.call(this, inputValue)) return;
+    if (inputValue === '') return this.closeAutoCorrectWindow();
     fetch(this.formUrl + "amazon/ac/" + inputValue).then(res => {
       res.json().then(jsonData => {
         this.addList(jsonData);
@@ -55,31 +61,25 @@ class Search_autocorrect {
   }
   resetAutocorrectLists() {
     this.autocorrectLists = this.autocorrectWindow.getElementsByClassName(
-      this.elObj.autocorrectLists
+      this.elObj.autocorrectListsClass
     );
     this.autocorrectListIndex = -1;
   }
-  isInputBlank(input) {
-    if (input === "") {
-      this.closeAutoCorrectWindow();
-      return true;
-    }
-  }
 
   addList(jsonData) {
-    let nowData = "";
     if (jsonData.suggestions === undefined) return;
-    jsonData.suggestions.forEach(suggestion => {
-      nowData += `<li
-      data-value="${suggestion.value}"
-      data-reftag="${suggestion.refTag}"
+    let nowData = jsonData.suggestions.reduce((bef, cur) => {
+      bef += `<li
+      data-value="${cur.value}"
+      data-reftag="${cur.refTag}"
       data-prefix="${jsonData.prefix}"
       class="head-search-autocorrect-list">
       <span class='bold'>${jsonData.prefix}</span><span>${this.cutData(
         jsonData.prefix.length,
-        suggestion.value
+        cur.value
       )}</span></li>`;
-    });
+      return bef
+    }, '')
     this.autocorrectWindow.innerHTML = nowData;
   }
   cutData(highlightLength, sugValue) {
@@ -87,16 +87,16 @@ class Search_autocorrect {
   }
 
   cloakBody() {
-    this.toBeCloakedEl.classList.add("cloaking");
+    this.toBeCloakedEl.classList.add(this.optionObj.cloakingBackgroundClass);
   }
   revealBody() {
-    this.toBeCloakedEl.classList.remove("cloaking");
+    this.toBeCloakedEl.classList.remove(this.optionObj.cloakingBackgroundClass);
   }
 
-  addUrl(e) {
-    const parentTargetData = e.target.parentNode.dataset;
-    const targetData = e.target.dataset;
-    if (e.target.tagName === "SPAN") {
+  addUrl(eventTarget) {
+    const parentTargetData = eventTarget.parentNode.dataset;
+    const targetData = eventTarget.dataset;
+    if (eventTarget.tagName === "SPAN") {
       return this.makeUrl(parentTargetData);
     }
     return this.makeUrl(targetData);
@@ -110,8 +110,8 @@ class Search_autocorrect {
       `amazon-search?ref=${refTag}&field-keywords=${keywords}&prefix=${prefix}`
     );
   }
-  goAddress(e) {
-    this.formObj.action = this.addUrl(e);
+  goAddress(eventTarget) {
+    this.formObj.action = this.addUrl(eventTarget);
     this.formObj.submit();
   }
   makeUrlKeywords(data) {
@@ -140,11 +140,11 @@ class Search_autocorrect {
     this.autocorrectListIndex--;
     const bFirstData = this.autocorrectListIndex === -1;
     if (bFirstData) {
-      list[this.autocorrectListIndex + 1].style = "background-color:#fff;";
+      list[this.autocorrectListIndex + 1].classList.remove(this.optionObj.shadingAutocorrectClass)
       return;
     }
-    list[this.autocorrectListIndex].style = "background-color:#f8f8f8;";
-    list[this.autocorrectListIndex + 1].style = "background-color:#fff;";
+    list[this.autocorrectListIndex].classList.add(this.optionObj.shadingAutocorrectClass);
+    list[this.autocorrectListIndex + 1].classList.remove(this.optionObj.shadingAutocorrectClass)
   }
   changeListBackgourndColorDown(list) {
     const biggestIndex = list.length - 2;
@@ -152,11 +152,11 @@ class Search_autocorrect {
     if (bLastData) return;
     this.autocorrectListIndex++;
     if (this.autocorrectListIndex === 0) {
-      list[this.autocorrectListIndex].style = "background-color:#f8f8f8;";
+      list[this.autocorrectListIndex].classList.add(this.optionObj.shadingAutocorrectClass);
       return;
     }
-    list[this.autocorrectListIndex].style = "background-color:#f8f8f8;";
-    list[this.autocorrectListIndex - 1].style = "background-color:#fff;";
+    list[this.autocorrectListIndex].classList.add(this.optionObj.shadingAutocorrectClass);
+    list[this.autocorrectListIndex - 1].classList.remove(this.optionObj.shadingAutocorrectClass)
   }
 
   addInputValue() {
@@ -165,7 +165,6 @@ class Search_autocorrect {
     ].dataset.value;
     this.closeAutoCorrectWindow();
     return;
-    // 선택된 상태에서 엔터키를 입력하면 해당검색어가 위쪽 검색input창에 추가된다.  동시에 검색결과창은 사라진다.
   }
 
   submitFormData(e) {
@@ -174,4 +173,4 @@ class Search_autocorrect {
   }
 }
 
-export { Search_autocorrect };
+export { SearchAutocorrect };
