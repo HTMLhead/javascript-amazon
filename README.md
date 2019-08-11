@@ -1,6 +1,6 @@
 # 아마존 페이지 모작
 
-javascript-amazon.gif
+<img src="./docs/javascript-amazon.gif" />
 
 ## 데모
 
