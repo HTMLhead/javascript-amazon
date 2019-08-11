@@ -1,6 +1,6 @@
 # 아마존 페이지 모작
 
-<img src="./docs/javascript-amazon.gif" />
+<img src="./docs/javascript-amazon.gif" width="500" height="300" />
 
 ## 데모
 
